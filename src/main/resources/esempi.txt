@@ -1,0 +1,77 @@
+http://localhost:8080/api/v1/auth/register/amministratore
+
+{
+    "nome" : "mario",
+    "cognome" : "rossi",
+    "email" : "mario@gmail.com",
+    "password" : "mariorossi",
+    "citta" : "milano",
+    "cap" :"12345",
+    "indirizzo" : "via roma, 4",
+    "ragioneSociale" : "srl",
+    "partitaIVA" : "1234567890",
+    "codiceFiscale" : "MR27RM",
+    "nickname" : "il mario"
+}
+
+http://localhost:8080/api/v1/auth/authenticate
+
+{
+    "email" : "mario@gmail.com",
+    "password" : "mariorossi"
+}
+
+http://localhost:8080/api/v1/auth/register/utente
+
+{
+    "nome" : "simone",
+    "cognome" : "verdi",
+    "email" : "simone@virgilio.it",
+    "password" : "simoneverdi",
+    "citta" : "monza",
+    "cap" :"54321",
+    "indirizzo" : "viale italia, 7",
+    "targa" : "AB123CD",
+    "tipologiaAuto" : "Utilitaria",
+    "gestore": {
+        "id": 1
+      }
+}
+
+http://localhost:8080/api/v1/auth/authenticate
+
+{
+    "email": "simone@virgilio.it",
+    "password" : "simoneverdi"
+}
+
+public AuthenticationResponse registerAmministratore(RegisterRequestAmministratore request) {
+        var amministratore = (Amministratore) buildUser(request);
+        amministratore = Amministratore.amministratoreBuilder()
+                .role(Role.AMMINISTRATORE)
+                .ragioneSociale(request.getRagioneSociale())
+                .partitaIVA(request.getPartitaIVA())
+                .codiceFiscale(request.getCodiceFiscale())
+                .nickname(request.getNickname())
+                .build();
+        repository.save(amministratore);
+        var jwtToken = jwtService.generateToken(amministratore);
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+public AuthenticationResponse registerUtente(RegisterRequestUtente request) {
+        var utente = (Utente) buildUser(request);
+        utente = Utente.utenteBuilder()
+                .role(Role.UTENTE)
+                .targa(request.getTarga())
+                .tipologiaAuto(request.getTipologiaAuto())
+                .amministratore(request.getAmministratore())
+                .build();
+        repository.save(utente);
+        var jwtToken = jwtService.generateToken(utente);
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
